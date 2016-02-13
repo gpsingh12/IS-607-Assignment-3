@@ -1,0 +1,146 @@
+---
+title: "Assignment 3"
+author: "GP SINGH"
+date: "February 11, 2016"
+output: html_document
+---
+
+```{r}
+
+library(RCurl)
+
+```
+
+
+
+
+
+
+
+
+
+```{r}
+
+tb <- getURL("https://raw.githubusercontent.com/gpsingh12/IS-607-Assignment-3/master/tb.csv")
+tb <- read.csv(text = tb, header = FALSE)
+```
+
+Assigning the names to the columns of dataset tb
+
+
+```{r}
+names(tb)<-c("country", "year", "sex", "child", "adult", "elderly")
+
+head(tb)
+
+```
+
+
+
+
+
+
+
+As we looked at first few rows of tb, there were values that were NA giving us -1
+in the columns. We need to replace these values for mathematical operations.
+
+
+```{r}
+tb <- replace(tb, tb == -1, 0)
+head(tb)
+```
+
+
+creating new column by adding child, adult and elderly as cases
+
+
+```{r}
+tb <- transform(tb, case = child + adult + elderly)
+
+
+# remove the columns  child, adult and elderly
+
+tb$child<-NULL
+tb$adult<-NULL
+tb$elderly<-NULL
+
+head(tb)
+```
+
+
+
+
+The the dataset tb contains both cases for male and female.  We create two datasets
+with male and female.
+
+```{r}
+male_data <- subset(tb, tb$sex == "male")
+female_data<-subset(tb, tb$sex == "female")
+
+head(male_data)
+head(female_data)
+```
+
+
+
+Add another column from female_data to male_date to add both the cases
+
+```{r}
+t1 <- transform(male_data, case1 = female_data$case)
+head(t1)
+```
+
+
+here case represent male cases and case1 represent female cases
+
+
+```{r}
+# i will use matrix operations to add the columns  
+t2<-transform(t1, cases = case+case1)
+
+
+#remove columns sex, case and case1
+t2$sex<-NULL
+t2$case<-NULL
+t2$case1<-NULL
+# t2 contains the combined cases of male and female datasets
+head(t2)
+```
+
+
+Reading data for population dataset
+
+
+```{r}
+p<- getURL("https://raw.githubusercontent.com/gpsingh12/IS-607-Assignment-3/master/population.csv")
+population<- read.csv(text=p)
+head(population)
+```
+
+Merge t2 and population datasets
+
+```{r}
+
+tb <- merge(t2, population, by=c("country", "year"))
+
+
+#create a new column in tb by dividing cases by population
+
+tb<-transform(tb,rate = (cases/population)*100000)
+
+
+#  remove population and cases columns 
+
+tb$population<-NULL
+tb$cases<-NULL
+
+
+#final result
+
+head(tb)
+
+
+
+
+
+```
